@@ -1,0 +1,87 @@
+package org.firstinspires.ftc.teamcode.TeleOp;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
+
+@TeleOp (name = "Drive", group = "TeleOp")
+public class summer extends LinearOpMode
+{
+    DcMotor leftWheel;
+    DcMotor rightWheel;
+    DcMotor lift;
+    Servo wrist;
+    Servo claw;
+    Servo elbow;
+
+
+    @Override
+    public void runOpMode()
+    {
+        leftWheel = hardwareMap.dcMotor.get("leftWheel");
+        rightWheel = hardwareMap.dcMotor.get("rightWheel");
+        rightWheel.setDirection(DcMotor.Direction.REVERSE);
+        lift = hardwareMap.dcMotor.get("lift");
+        wrist = hardwareMap.servo.get("wrist");
+        claw = hardwareMap.servo.get("claw");
+        elbow = hardwareMap.servo.get("elbow");
+
+        waitForStart();
+
+        while (opModeIsActive())
+        {
+            leftWheel.setPower((gamepad1.left_stick_y + (gamepad1.right_stick_x * 0.5) * (-1)));
+            rightWheel.setPower((gamepad1.left_stick_y - (gamepad1.right_stick_x * 0.5)  *(-1)));
+
+            if (gamepad1.dpad_up)
+            {
+                lift.setPower(.5);
+            }
+            else
+            {
+                lift.setPower(0);
+            }
+
+            if (gamepad1.dpad_down)
+            {
+                lift.setPower(-0.5);
+            }
+
+            if (gamepad1.right_bumper)
+            {
+                claw.setPosition(0);
+            }
+
+            if (gamepad1.x)
+            {
+                wrist.setPosition(1);
+            }
+
+            if (gamepad1.left_bumper)
+            {
+                claw.setPosition(1);
+            }
+
+            if (gamepad1.y)
+            {
+                elbow.setPosition(0);
+            }
+
+            if (gamepad1.b)
+            {
+                elbow.setPosition(1);
+            }
+        }
+
+    }
+
+
+
+}
