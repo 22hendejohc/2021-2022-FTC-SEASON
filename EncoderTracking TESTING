@@ -9,13 +9,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import java.util.Arrays;
 
 
 @TeleOp(name = "EncoderTracking", group =  "Telep")
 public class EncoderTracking extends LinearOpMode {
 
     //Motors
-    DcMotor lw = null;
+    DcMotor lw;
     DcMotor rw;
     DcMotor blw;
     DcMotor brw;
@@ -97,6 +98,37 @@ public class EncoderTracking extends LinearOpMode {
         backRightPower -= amount;
     }
 
+    public void toPosition(){
+        int lwPositon = lw.getCurrentPosition();
+        int blwPositon = blw.getCurrentPosition();
+        int rwPositon = rw.getCurrentPosition();
+        int brwPositon = brw.getCurrentPosition();
+        int[] ticks = {Math.abs(lwPositon), Math.abs(blwPositon), Math.abs(rwPositon), Math.abs(brwPositon)};
+        Arrays.sort(ticks);
+        lw.setTargetPosition(0);
+        blw.setTargetPosition(0);
+        brw.setTargetPosition(0);
+        rw.setTargetPosition(0);
+
+        lw.setPower(-lwPositon/ticks[3]);
+        blw.setPower(-blwPositon/ticks[3]);
+        rw.setPower(-rwPositon/ticks[3]);
+        brw.setPower(-brwPositon/ticks[3]);
+
+        lw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        blw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        brw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while(lw.isBusy()){
+            telemetry.addData("tics", lw.getCurrentPosition());
+        }
+        lw.setPower(0);
+        blw.setPower(0);
+        rw.setPower(0);
+        brw.setPower(0);
+
+    }
+
 
     @Override
     public void runOpMode() {
@@ -134,6 +166,8 @@ public class EncoderTracking extends LinearOpMode {
         waitForStart();
 
         // run until the end of the match (driver presses STOP)
+        int backrn = blw.getCurrentPosition();
+        boolean buttonA = false;
         while (opModeIsActive()) {
 
             int heading = gyro.getHeading();
@@ -141,12 +175,22 @@ public class EncoderTracking extends LinearOpMode {
             telemetry.addData("1. Heading: ", heading);
 
 
-            telemetry.addData("rightControlX", gamepad1.right_stick_x);
-            telemetry.addData("rightControlY", gamepad1.right_stick_y);
+            telemetry.addData("lw ticks:", lw.getCurrentPosition());
+            telemetry.addData("lw ticks:", rw.getCurrentPosition());
+            //telemetry.addData("rightControlX", gamepad1.right_stick_x);
+            //telemetry.addData("rightControlY", gamepad1.right_stick_y);
             telemetry.addData("Time", time);
             telemetry.addData("runtimeA", timeARunTime);
 
-
+            if (gamepad1.a) {
+                if (buttonA) {
+                    buttonA = false;
+                    toPosition();
+                }
+            }
+            else{
+                buttonA = true;
+            }
             /*double adjSpeed = 0.027;
             double minTurn = 0.007;
             int windowSize = 1;
@@ -155,7 +199,7 @@ public class EncoderTracking extends LinearOpMode {
             int piecewiseWindow = 15;
             double piecewiseSpeed = 0.015;
             double piecewiseMinTurn = 0.004;*/
-            if(!toggleA) {
+            /*if(!toggleA) {
                 telemetry.addData("adjSpeed", adjSpeed);
 
                 adjSpeed += gamepad2.left_stick_y;
@@ -185,7 +229,7 @@ public class EncoderTracking extends LinearOpMode {
 
                 piecewiseWindow += gamepad2.left_stick_y;
             }
-            telemetry.update();
+            telemetry.update();*/
 
 
            /* if(gamepad2.a)
@@ -332,10 +376,10 @@ public class EncoderTracking extends LinearOpMode {
             backRightPower = (-gamepad1.left_stick_y + gamepad1.left_stick_x) * (-speedAdjust / 10);
 
             // targetDegree is currently affected by the right stick and it changes the degrees the robot goes towards
-            targetDegree += gamepad1.right_stick_x;
-            targetDegree = degreeCalc(targetDegree);
+           // targetDegree += gamepad1.right_stick_x;
+           // targetDegree = degreeCalc(targetDegree);
 
-            if (degreeCalc(gyro.getHeading() - targetDegree) > windowSize + piecewiseWindow && degreeCalc(gyro.getHeading() - targetDegree) <= 180) {
+            /* if (degreeCalc(gyro.getHeading() - targetDegree) > windowSize + piecewiseWindow && degreeCalc(gyro.getHeading() - targetDegree) <= 180) {
                 if ((Math.pow(degreeCalc(gyro.getHeading() - targetDegree) * adjSpeed, 2)) >= minTurn) {
                     turnPower(-( Math.pow(degreeCalc(gyro.getHeading() - targetDegree) * adjSpeed, 2)));
                 }
@@ -369,7 +413,7 @@ public class EncoderTracking extends LinearOpMode {
                 else {
                     turnPower(minTurn);
                 }
-            }
+            }*/
 
             lw.setPower(leftPower);
             rw.setPower(rightPower);
